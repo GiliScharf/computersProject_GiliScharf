@@ -11,11 +11,13 @@ def valid_file_and_organization_checker(filename):
     for row_index in range(len(data)):
         data[row_index] = data[row_index].strip().split()
     # At this point I have the variable data that is a nested list
-    for row_index in range(len(data)):  # in case that there are extra spaces between the different values this will remove them
+    for row_index in range(
+            len(data)):  # in case that there are extra spaces between the different values this will remove them
         for column_index in range(len(data[row_index])):
             data[row_index][column_index] = data[row_index][column_index].strip()
 
-    if ("x" in data[0]) and ("y" in data[0]) and ("dx" in data[0]) and ("dy" in data[0]):  # if True it means the data is in columns
+    if ("x" in data[0]) and ("y" in data[0]) and ("dx" in data[0]) and (
+            "dy" in data[0]):  # if True it means the data is in columns
         file_organization = "columns"
         # Finding the index where the table ends:
         for i in range(len(data)):
@@ -173,25 +175,18 @@ def search_best_parameter(filename):
         N = len(data_dict['x'])  # N = number of measurements
         optional_chi2_list = []  # This list will contain the temporary minimized chi2 for each combination of a and b.
         for a in optional_a_list:
-            temporary_minimized_chi2 = 0
-            for i in range(N):
-                temporary_minimized_chi2 = temporary_minimized_chi2 + (
-                            (data_dict['y'][i] - a * data_dict['x'][i] - optional_b_list[0]) / (data_dict['dy'][i])) ** 2
-            temporary_best_b = optional_b_list[0]
             for b in optional_b_list:
                 chi2 = 0
                 for i in range(N):
                     chi2 = chi2 + ((data_dict['y'][i] - a * data_dict['x'][i] - b) / (data_dict['dy'][i])) ** 2
-                if chi2 < temporary_minimized_chi2:
-                    temporary_minimized_chi2 = chi2
-                    temporary_best_b = b
-            optional_chi2_list.append([temporary_minimized_chi2, a, temporary_best_b])
+                optional_chi2_list.append([chi2, a, b])
         optional_chi2_list.sort()
         minimized_chi2 = optional_chi2_list[0][0]
         best_a = optional_chi2_list[0][1]
         best_b = optional_chi2_list[0][2]
         chi2_reduced = minimized_chi2 / (N - 2)
-        output = "a = {} +- {}\nb = {} +- {}\nchi2 = {}\nchi2_reduced = {}".format(best_a, a_step, best_b, b_step, minimized_chi2, chi2_reduced)
+        output = "a = {} +- {}\nb = {} +- {}\nchi2 = {}\nchi2_reduced = {}".format(best_a, a_step, best_b, b_step,
+                                                                                   minimized_chi2, chi2_reduced)
         print(output)
 
         # Plotting part:
@@ -232,15 +227,14 @@ def search_best_parameter(filename):
             for i in range(N):
                 chi2 = chi2 + ((data_dict['y'][i] - a * data_dict['x'][i] - best_b) / (data_dict['dy'][i])) ** 2
             new_optional_chi2_list.append(chi2)
-        print(new_optional_chi2_list)
         # Plotting:
         y_label = "chi2(b = {})".format(best_b)
         pyplot.plot(optional_a_list, new_optional_chi2_list, 'b-')  # plotting chi2 as function of a in blue line
         pyplot.ylabel(y_label)
         pyplot.xlabel("a")
-        pyplot.savefig("numeric_sampling.svg", format="svg")  # saving the plot as svg file under the name "numeric_sampling.svg".
+        pyplot.savefig("numeric_sampling.svg",
+                       format="svg")  # saving the plot as svg file under the name "numeric_sampling.svg".
         pyplot.show()  # presenting the output
-
 
 
 def fit_linear(filename):
@@ -255,7 +249,8 @@ def fit_linear(filename):
         data_dict = {}
         if validity_organization_data[1] == "rows":
             for row_num in range(0, 4):
-                data_dict[validity_organization_data[2][row_num][0]] = validity_organization_data[2][row_num][1:len(validity_organization_data[2][row_num])]
+                data_dict[validity_organization_data[2][row_num][0]] = validity_organization_data[2][row_num][
+                                                                       1:len(validity_organization_data[2][row_num])]
         else:
             # Finding the index where the table ends:
             for i in range(len(validity_organization_data[2])):
@@ -265,7 +260,8 @@ def fit_linear(filename):
             for column_index in range(len(validity_organization_data[2][0])):
                 data_dict[validity_organization_data[2][0][column_index]] = []
                 for row_index in range(1, end_index):
-                    data_dict[validity_organization_data[2][0][column_index]].append(validity_organization_data[2][row_index][column_index])
+                    data_dict[validity_organization_data[2][0][column_index]].append(
+                        validity_organization_data[2][row_index][column_index])
 
         # Fitting function and definitions: In this part of the function, the function calculates the value of chi2,
         # chi2_reduced, a, b, da and db.
@@ -280,10 +276,18 @@ def fit_linear(filename):
         dy2_list = data_dict['dy'].copy()
         for i in range(len(dy2_list)):
             dy2_list[i] = dy2_list[i] ** 2
-        a = (average_calculator(xy_list, data_dict['dy']) - (average_calculator(data_dict['x'], data_dict['dy']) * average_calculator(data_dict['y'],data_dict['dy']))) / (average_calculator(x2_list, data_dict['dy']) - (average_calculator(data_dict['x'], data_dict['dy'])) ** 2)
-        b = average_calculator(data_dict['y'], data_dict['dy']) - a * average_calculator(data_dict['x'], data_dict['dy'])
-        da = (average_calculator(dy2_list, data_dict['dy']) / (N * (average_calculator(x2_list, data_dict['dy']) - (average_calculator(data_dict['x'], data_dict['dy'])) ** 2))) ** 0.5
-        db = ((average_calculator(dy2_list, data_dict['dy']) * average_calculator(x2_list, data_dict['dy'])) / (N * (average_calculator(x2_list, data_dict['dy']) - (average_calculator(data_dict['x'], data_dict['dy'])) ** 2))) ** 0.5
+        a = (average_calculator(xy_list, data_dict['dy']) - (
+                average_calculator(data_dict['x'], data_dict['dy']) * average_calculator(data_dict['y'],
+                                                                                         data_dict['dy']))) / (
+                    average_calculator(x2_list, data_dict['dy']) - (
+                average_calculator(data_dict['x'], data_dict['dy'])) ** 2)
+        b = average_calculator(data_dict['y'], data_dict['dy']) - a * average_calculator(data_dict['x'],
+                                                                                         data_dict['dy'])
+        da = (average_calculator(dy2_list, data_dict['dy']) / (N * (average_calculator(x2_list, data_dict['dy']) - (
+            average_calculator(data_dict['x'], data_dict['dy'])) ** 2))) ** 0.5
+        db = ((average_calculator(dy2_list, data_dict['dy']) * average_calculator(x2_list, data_dict['dy'])) / (N * (
+                average_calculator(x2_list, data_dict['dy']) - (
+            average_calculator(data_dict['x'], data_dict['dy'])) ** 2))) ** 0.5
         chi2 = 0
         for i in range(N):
             chi2 = chi2 + ((data_dict['y'][i] - a * data_dict['x'][i] - b) / (data_dict['dy'][i])) ** 2
@@ -297,8 +301,9 @@ def fit_linear(filename):
         for i in range(N):
             fitted_y_arguments.append(a * data_dict['x'][i] + b)
         # Creating a strings with the label of x and y:
-        for i in range(len(validity_organization_data[2])): # Finding the index of the row where the axises are written:
-            if len(validity_organization_data[2][i])>=2:
+        for i in range(
+                len(validity_organization_data[2])):  # Finding the index of the row where the axises are written:
+            if len(validity_organization_data[2][i]) >= 2:
                 if validity_organization_data[2][i][1] == 'axis:':
                     if validity_organization_data[2][i][0] == 'x':
                         x_label_index = i
@@ -314,7 +319,8 @@ def fit_linear(filename):
         x_label.strip()
         # Plotting:
         pyplot.plot(data_dict['x'], fitted_y_arguments, 'r-')  # plotting y=ax+b in red line
-        pyplot.errorbar(data_dict['x'], data_dict['y'], yerr=data_dict['dy'], xerr=data_dict['dx'], fmt='b,')  # plotting x,y dots as error bars in blue dots
+        pyplot.errorbar(data_dict['x'], data_dict['y'], yerr=data_dict['dy'], xerr=data_dict['dx'],
+                        fmt='b,')  # plotting x,y dots as error bars in blue dots
         pyplot.ylabel(y_label)
         pyplot.xlabel(x_label)
         pyplot.savefig("linear_fit.svg", format="svg")  # saving the plot as svg file under the name "linear_fit.svg".
